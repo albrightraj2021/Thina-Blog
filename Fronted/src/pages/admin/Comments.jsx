@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { comments_data } from '../../srcAssest';
+import { useAppContext } from '../../components/AppContext';
 import CommentTableItem from '../../components/admin/CommentTableItem';
 const Comments = () => {
+  const { axios } = useAppContext();
   const [comments, setComments] = useState([]);
   const [filter, setFilter] = useState('Not Approved');
   const fetchComments = async () => {
     try {
-
-      // const response = await fetch('https://jsonplaceholder.typicode.com/comments');
-      // const data = await response.json();
-      setComments(comments_data);
+      const { data } = await axios.get('/api/admin/comments');
+      if (data.success) {
+        setComments(data.comments);
+      } else {
+        console.error(data.message);
+      }
     } catch (error) {
       console.error('Error fetching comments:', error);
     }

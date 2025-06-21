@@ -1,17 +1,19 @@
 import mongoose from "mongoose";
+import Blog from "./Blog.js";
 const commentSchema = new mongoose.Schema({
  blog:{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "blog",
+    ref: Blog,
     required: true,
   },
   name: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: "name",
     required: true,
   },
   content: {
     type: String,
+    ref: "content",
     required: true,
   },
   isApproved: {

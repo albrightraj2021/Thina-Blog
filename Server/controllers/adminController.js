@@ -2,22 +2,20 @@ import jwt from 'jsonwebtoken';
 import Blog from '../models/Blog.js';
 import Comment from '../models/comments.js';
  
-export const adminLogin= async (req, res) => {
- try {
-   const { email, password } = req.body;
-    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-         const token=jwt.sign({ email }, process.env.JWT_SECRET);
-         res.json({success:true, token });
-    } else {
-        res.status(401).json({ message: "Invalid credentials" });
+export const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
+      return res.json({ success: false, message: "Invalid Credentials" });
     }
-    
- }
-    catch (error) {
-        console.error("Error during admin login:", error);
-        res.status(500).json({ message: "Internal server error" });
-    }
-}     
+
+    const token = jwt.sign({ email }, process.env.JWT_SECRET);
+    res.json({ success: true, token });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};  
 export const getAllBlogsAdmin = async (req, res) => {
   try {
     const blogs = await Blog.find({}).sort({createdAt: -1});
@@ -57,7 +55,10 @@ export const getAllComments = async (req, res) => {
 export const deleteCommentById = async (req, res) => {
   try {
     const { id } = req.body;
+   
+    
     await Comment.findByIdAndDelete(id);
+    
     res.json({ success: true, message: "Comment deleted successfully" });
   } catch (error) {
     res.json({ success: false, message: error.message });

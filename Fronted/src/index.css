@@ -7,3 +7,12 @@
 * {
     font-family: 'Poppins';
 }
+.ql-editor table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ql-editor table td,
+.ql-editor table th {
+  border: 1px solid #ccc;
+  padding: 8px;
+}

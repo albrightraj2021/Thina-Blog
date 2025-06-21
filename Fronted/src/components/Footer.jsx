@@ -4,7 +4,7 @@ import { footer_data } from '../srcAssest';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 const Footer = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   return (
     <footer className="bg-gray-900 text-white py-10">
       <div className="container mx-auto px-4">
@@ -15,7 +15,7 @@ const Footer = () => {
             <p className="text-gray-400 text-sm">
               Your trusted source for insightful articles and engaging content.
             </p>
-         
+
           </div>
 
           {/* Quick Links Sections */}
@@ -23,20 +23,35 @@ const Footer = () => {
             <div key={index} className="mb-6 md:mb-0">
               <h3 className="text-lg font-semibold mb-4">{section.title}</h3>
               <ul className="space-y-2">
-                {section.links.map((link, linkIndex) => (
-                  <li key={linkIndex}>
-                    <Link 
-                        to={(link === 'Home' ? '/' :'/contact')} 
-                      className="text-gray-400 hover:text-white transition duration-200"
-                    >
-                      {link}
-                    </Link>
-                  </li>
-                ))}
+                {section.links.map((link, linkIndex) => {
+                  const isExternal = link.url.startsWith('http');
+                  return (
+                    <li key={linkIndex}>
+                      {isExternal ? (
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-400 hover:text-white transition duration-200"
+                        >
+                          {link.name}
+                        </a>
+                      ) : (
+                        <Link
+                          to={link.url}
+                          className="text-gray-400 hover:text-white transition duration-200"
+                        >
+                          {link.name}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
         </div>
+
 
         {/* Bottom Section with Copyright */}
         <div className="border-t border-gray-800 pt-8 mt-8">

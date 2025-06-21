@@ -1,12 +1,24 @@
-import React from 'react'
 import { useState } from 'react';
+import { useAppContext } from '../AppContext';
+import toast from 'react-hot-toast';
 
 const Login = () => {
+    const { axios, setToken ,navigate} = useAppContext();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-
+        try {
+            const { data } = await axios.post('/api/admin/login', { email, password });
+     
+            if (data.success) {
+                setToken(data.token);
+                localStorage.setItem('token', data.token);
+                axios.defaults.headers.common['Authorization'] = `${data.token}`;
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Login failed. Please try again.');
+        }
     };
 
     return (
@@ -22,16 +34,17 @@ const Login = () => {
                         </p>
                     </div>
                     <form onSubmit={handleLogin} className="w-full">
-                      <div className="flex flex-col">
+                        <div className="flex flex-col">
                             <label>Email</label>
                             <input
                                 type="email"
                                 required
-                                value={setEmail}
+                                value={email}
                                 placeholder="your email"
                                 className="border-b-2 border-gray-300 p-2 outline-none mb-6"
+                                onChange={e => setEmail(e.target.value)}
                             />
-                        </div> 
+                        </div>
                         <div className="flex flex-col">
                             <label>Password</label>
                             <input
@@ -39,10 +52,11 @@ const Login = () => {
                                 required
                                 placeholder="your password"
                                 className="border-b-2 border-gray-300 p-2 outline-none mb-6"
-                                value={setPassword}
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
                             />
                         </div>
-                        
+
                         <button
                             type="submit"
                             className="w-full py-3 font-medium bg-primary text-white rounded cursor-pointer hover:bg-primary/90 transition-all"
@@ -55,6 +69,5 @@ const Login = () => {
         </div>
     );
 };
-
 
 export default Login

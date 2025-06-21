@@ -1,6 +1,8 @@
 import imageKit from "../config/imageKit.js";
 import fs from 'fs';
 import Blog from '../models/Blog.js';
+import Comment from '../models/comments.js';
+import {main}  from '../config/gemini.js';
 
 export const addBlog = async (req, res) => {
     try {
@@ -11,22 +13,22 @@ export const addBlog = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const fileBuffer = fs.readFileSync(imageFile.path); 
+        const fileBuffer = fs.readFileSync(imageFile.path);
         const response = await imageKit.upload({
             file: fileBuffer,
             fileName: imageFile.originalname,
             folder: "/blog",
         });
-        
+
         const optimizedImageUrl = imageKit.url({
             path: response.filePath,
             transformation: [
-                {quality: "auto"},
-                {format: "webp"},
-                {width: 1280}
+                { quality: "auto" },
+                { format: "webp" },
+                { width: 1280 }
             ]
         });
-        
+
         const image = optimizedImageUrl;
         await Blog.create({
             title,
@@ -36,8 +38,8 @@ export const addBlog = async (req, res) => {
             image,
             isPublished: isPublished || false,
         });
-        
-        res.status(201).json({ message: "Blog added successfully" });
+
+        res.status(201).json({ success: true, message: "Blog added successfully" });
 
     } catch (error) {
         console.error("Error adding blog:", error);
@@ -47,8 +49,8 @@ export const addBlog = async (req, res) => {
 
 export const getAllBlogs = async (req, res) => {
     try {
-        const blogs = await Blog.find( {isPublished: true  });
-        res.status(200).json(blogs);
+        const blogs = await Blog.find({ isPublished: true });
+        res.status(200).json({ success: true, blogs });
     } catch (error) {
         console.error("Error fetching blogs:", error);
         res.status(500).json({ message: "Internal server error" });
@@ -57,24 +59,21 @@ export const getAllBlogs = async (req, res) => {
 
 export const getBlogById = async (req, res) => {
     try {
-        const { blogId } = req.params;
+        const { blogId } = req.params; // Assuming it's req.params based on typical route structures for fetching by ID
         const blog = await Blog.findById(blogId);
         if (!blog) {
-            return res.status(404).json({ message: "Blog not found" });
+            return res.json({ success: false, message: "Blog not found" });
         }
-        res.status(200).json(blog);
+        res.json({ success: true, blog });
     } catch (error) {
-        console.error("Error fetching blog by ID:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.json({ success: false, message: error.message });
     }
 };
 
 export const deleteBlogById = async (req, res) => {
     try {
-        const {id}=req.body;
-        const blog= await Blog.findByIdAndDelete(id);
-        await Comment.deleteMany({ blog: id }); // Delete associated comments
-
+        const { id } = req.body;
+        const blog = await Blog.findByIdAndDelete(id);
         if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
         }
@@ -85,47 +84,54 @@ export const deleteBlogById = async (req, res) => {
     }
 }
 
-export const togglePublish= async (req, res) => {
+export const togglePublish = async (req, res) => {
     try {
-        const {id}=req.body;
+        const { id } = req.body;
         const blog = await Blog.findById(id);
-        if (!blog) {
-            return res.status(404).json({ message: "Blog not found" });
-        }
         blog.isPublished = !blog.isPublished;
         await blog.save();
-        res.status(200).json({ message: `Blog ${blog.isPublished ? 'published' : 'unpublished'} successfully` });
+        res.json({ success: true, message: 'Blog status updated' });
     } catch (error) {
-        console.error("Error toggling publish status:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.json({ success: false, message: error.message });
     }
-}
+};
 export const addComment = async (req, res) => {
-    try{
-  const{blog,name,console}=req.body;
-  await Comment.create({
-    blog,
-    name,
-    content
-
-    });
-} catch (error) {
-    console.error("Error adding comment:", error);
-    res.status(500).json({ message: "Internal server error" });
+  try {
+    const { blog, name, content } = req.body;
+    await Comment.create({ blog, name, content });
+    res.json({ success: true, message: 'Comment added for review' });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
   }
-}
+};
 
 export const getBlogComments = async (req, res) => {
-    try {
-        const { blogId } = req.body;
-        const comments = await Comment.find({ blog: blogId, isApproved: true }).sort({ createdAt: -1 }); // Populate name field with user name
-        if (!comments) {
-            return res.status(404).json({ message: "No comments found for this blog" });
-        }
-        res.status(200).json(comments);
-    } catch (error) {
-        console.error("Error fetching comments:", error);
-        res.status(500).json({ message: "Internal server error" });
-    }
-}
+  try {
+    const { blogId } = req.body;
+    
+    
+    const comments = await Comment.find({ blog: blogId, isApproved: true }).sort({ createdAt: -1 });
+ 
+    
+    res.json({ success: true, comments });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
 
+export const generateContent = async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    const content = await main(prompt
+        
+        +"Generate a blog content for this topic in simple text format");
+        console.log(content);
+        
+
+
+    res.json({ success: true, content });
+  } catch (error) {
+    console.error("Error generating content:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
