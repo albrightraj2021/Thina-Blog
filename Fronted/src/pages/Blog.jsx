@@ -1,83 +1,88 @@
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { assets } from '../srcAssest';
 import Navbar from '../components/Navbar';
 import Loader from '../components/Loader';
-import Moment from 'moment'
-
+import Moment from 'moment';
 import Footer from '../components/Footer';
 import { useAppContext } from '../components/AppContext';
 import toast from 'react-hot-toast';
+import { Helmet } from 'react-helmet-async';
+
 const Blog = () => {
     const { id } = useParams();
     const { axios } = useAppContext();
     const [data, setData] = useState(null);
-
     const [comments, setComments] = useState([]);
     const [name, setName] = useState('');
     const [content, setContent] = useState('');
 
-
     const fetchBlogData = async () => {
         try {
             const { data } = await axios.get(`/api/blog/${id}`);
-
-
             if (data.success) {
                 setData(data.blog);
             } else {
                 console.error(data.message);
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error('Error fetching blog:', error);
         }
     };
+
     const addComment = async (e) => {
         e.preventDefault();
         try {
-
-
             const { data } = await axios.post(`/api/blog/add-comment`, { blog: id, name, content });
-
             if (data.success) {
                 toast.success(data.message);
                 setName('');
                 setContent('');
-
+                fetchComments(); // refresh after new comment
             } else {
                 toast.error(data.message);
             }
         } catch (error) {
-            toast.error(data.message)
+            toast.error("Error posting comment");
         }
     };
 
     const fetchComments = async () => {
         try {
             const { data } = await axios.post(`/api/blog/comments`, { blogId: id });
-
-
-
             if (data.success) {
                 setComments(data.comments);
             } else {
                 console.error(data.message);
             }
-
         } catch (error) {
             console.error('Error fetching comments:', error);
         }
-    }
+    };
 
     useEffect(() => {
         fetchBlogData();
         fetchComments();
     }, []);
 
+    const stripHtml = (html) => html.replace(/<[^>]+>/g, '');
+
     return (
         <div className="">
             <Navbar hideLoginButton="true" />
+
+            {data && (
+                <Helmet>
+                    <title>{data.title} | My Blog</title>
+                    <meta name="description" content={stripHtml(data.description).slice(0, 150)} />
+                    <meta property="og:title" content={data.title} />
+                    <meta property="og:description" content={stripHtml(data.description).slice(0, 150)} />
+                    <meta property="og:image" content={data.image} />
+                    <meta property="og:url" content={`https://yourdomain.com/blog/${id}`} />
+                    <meta name="twitter:card" content="summary_large_image" />
+                </Helmet>
+            )}
+
             {data ? (
                 <div className="max-w-3xl mx-auto p-8 bg-white shadow-lg rounded-2xl">
                     <div className="flex items-center justify-between gap-3 mb-6">
@@ -115,12 +120,11 @@ const Blog = () => {
                         />
                     </article>
 
-
                     <div className='mt-14 mb-10 max-w-3xl mx-auto'>
-                        <p className=''>Comments ({comments.length})</p>
+                        <p className='font-semibold mb-2'>Comments ({comments.length})</p>
                         <div className='flex flex-col gap-4'>
                             {comments.map((item, index) => (
-                                <div key={index} className='relative bg-primary/2 border border-primary/5 max-w-xl p-4 rounded text-gray-600'>
+                                <div key={index} className='relative bg-primary/5 border border-primary/10 max-w-xl p-4 rounded text-gray-600'>
                                     <div className='flex items-center gap-2 mb-2'>
                                         <img src={assets.user_icon} alt="" className='w-6' />
                                         <p className='font-medium'>{item.name}</p>
@@ -131,30 +135,38 @@ const Blog = () => {
                             ))}
                         </div>
                     </div>
+
                     <div className='max-w-3xl mx-auto'>
                         <p className='font-semibold mb-4'>Add your comment</p>
                         <form onSubmit={addComment} className='flex flex-col items-start gap-4 max-w-lg'>
                             <input
                                 onChange={(e) => setName(e.target.value)}
                                 value={name}
-                                type="text" placeholder='Name' required className='w-full p-2 border border-gray-300 rounded outline-none' />
+                                type="text"
+                                placeholder='Name'
+                                required
+                                className='w-full p-2 border border-gray-300 rounded outline-none'
+                            />
                             <textarea
                                 onChange={(e) => setContent(e.target.value)}
                                 value={content}
-                                placeholder='Comment' className='w-full p-2 border border-gray-300 rounded outline-none h-48 required'></textarea>
-                            <button type="submit" className='bg-primary text-white rounded p-2 px-8 hover:scale-102 transition-all cursor-pointer'>Submit</button>
+                                placeholder='Comment'
+                                required
+                                className='w-full p-2 border border-gray-300 rounded outline-none h-48'
+                            ></textarea>
+                            <button type="submit" className='bg-primary text-white rounded p-2 px-8 hover:scale-102 transition-all cursor-pointer'>
+                                Submit
+                            </button>
                         </form>
                     </div>
-
                 </div>
-
             ) : (
                 <Loader />
             )}
+
             <Footer />
         </div>
     );
-}
+};
 
-export default Blog
-
+export default Blog;
