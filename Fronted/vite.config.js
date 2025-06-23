@@ -15,22 +15,5 @@ export default defineConfig({
         '/blog',
       ],
     }),
-    createHtmlPlugin({
-      minify: true,
-      inject: {
-        data: {
-          title: 'Thina Blog',
-          description: 'Explore insightful articles on technology, lifestyle, startups, and more at Thina Blog.',
-          keywords: 'technology, lifestyle, startups, blog',
-          ogTitle: 'Thina Blog',
-          ogDescription: 'Explore insightful articles on technology, lifestyle, startups, and more at Thina Blog.',
-          ogImage: 'https://ik.imagekit.io/thinablog/blog/Description.png',
-          twitterCard: 'summary_large_image',
-          twitterTitle: 'Thina Blog',
-          twitterDescription: 'Explore insightful articles on technology, lifestyle, startups, and more at Thina Blog.',
-          twitterImage: 'https://ik.imagekit.io/thinablog/blog/Description.png',
-        },
-      },
-    }),
   ],
 });
