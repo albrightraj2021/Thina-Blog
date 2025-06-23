@@ -73,7 +73,7 @@ const Blog = () => {
 
             {data && (
                 <Helmet>
-                    <title>{data.title} | My Blog</title>
+                    <title>{data.title} | Thina Blog</title>
                     <meta name="description" content={stripHtml(data.description).slice(0, 150)} />
                     <meta property="og:title" content={data.title} />
                     <meta property="og:description" content={stripHtml(data.description).slice(0, 150)} />
