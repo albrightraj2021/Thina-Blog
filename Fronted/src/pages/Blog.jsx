@@ -73,13 +73,33 @@ const Blog = () => {
 
             {data && (
                 <Helmet>
+                    {/* Page Title */}
                     <title>{data.title} | Thina Blog</title>
-                    <meta name="description" content={stripHtml(data.description).slice(0, 150)} />
+                    <link rel="icon" type="image/svg+xml" href="./src/assets/logoWoText.svg" />
+                    {/* SEO Meta Tags */}
+                    <meta name="keywords" content={data.title} />
+                    <meta name="description" content={stripHtml(data.description).slice(0, 100)} />
+
+                    {/* Open Graph / Facebook / LinkedIn */}
+                    <meta property="og:type" content="article" />
                     <meta property="og:title" content={data.title} />
-                    <meta property="og:description" content={stripHtml(data.description).slice(0, 150)} />
+                    <meta property="og:description" content={stripHtml(data.description).slice(0, 100)} />
                     <meta property="og:image" content={data.image} />
                     <meta property="og:url" content={`https://yourdomain.com/blog/${id}`} />
+                    <meta property="og:site_name" content="Thina Blog" />
+
+                    {/* Twitter */}
                     <meta name="twitter:card" content="summary_large_image" />
+                    <meta name="twitter:title" content={data.title} />
+                    <meta name="twitter:description" content={stripHtml(data.description).slice(0, 100)} />
+                    <meta name="twitter:image" content={data.image} />
+                    <meta name="twitter:site" content="@YourTwitterHandle" />
+                    <meta name="twitter:creator" content="@YourTwitterHandle" />
+
+                    {/* Pinterest */}
+                    <meta name="pinterest-rich-pin" content="true" />
+
+                    {/* WhatsApp uses Open Graph tags */}
                 </Helmet>
             )}
 
